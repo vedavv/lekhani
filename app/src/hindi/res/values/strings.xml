@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subtype_label">Hindi (हिन्दी)</string>
+    <string name="key_space">स्पेस</string>
+
+    <!-- Font options for Hindi -->
+    <string-array name="font_entries">
+        <item>Sarala</item>
+        <item>Mukta</item>
+        <item>Martel</item>
+        <item>System Default</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>sarala</item>
+        <item>mukta</item>
+        <item>martel</item>
+        <item>system</item>
+    </string-array>
+</resources>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- These are overridden by flavor-specific strings.xml -->
+    <string name="ime_name">Lekhani</string>
+    <string name="ime_settings">Keyboard Settings</string>
+
+    <!-- Setup instructions -->
+    <string name="setup_instructions">Follow these steps to enable the keyboard:</string>
+    <string name="step1_title">Step 1: Enable Keyboard</string>
+    <string name="step1_desc">Open Language &amp; Input settings and enable the keyboard</string>
+    <string name="step2_title">Step 2: Select Keyboard</string>
+    <string name="step2_desc">Switch to this keyboard as your input method</string>
+    <string name="keyboard_settings_title">Keyboard Settings</string>
+
+    <!-- Settings buttons -->
+    <string name="enable_keyboard_title">Enable Keyboard</string>
+    <string name="enable_keyboard_summary">Open system settings to enable keyboard</string>
+    <string name="select_keyboard_title">Select Keyboard</string>
+    <string name="select_keyboard_summary">Choose as your input method</string>
+
+    <!-- Status -->
+    <string name="status_enabled">✓ Keyboard is enabled</string>
+    <string name="status_disabled">Keyboard is not yet enabled</string>
+
+    <!-- Preferences -->
+    <string name="pref_category_feedback">Feedback</string>
+    <string name="pref_category_appearance">Appearance</string>
+    <string name="pref_vibrate_title">Vibrate on keypress</string>
+    <string name="pref_vibrate_summary">Haptic feedback when typing</string>
+    <string name="pref_sound_title">Sound on keypress</string>
+    <string name="pref_sound_summary">Play sound when typing</string>
+    <string name="pref_popup_title">Show popup on keypress</string>
+    <string name="pref_popup_summary">Display character preview</string>
+    <string name="pref_longpress_title">Long press delay</string>
+    <string name="pref_longpress_summary">Time before alternate characters appear</string>
+    <string name="pref_key_height_title">Key height</string>
+    <string name="pref_key_height_summary">Adjust keyboard key size</string>
+    <string name="pref_font_title">Keyboard Font</string>
+    <string name="pref_font_summary">Choose the font for displaying characters</string>
+
+    <!-- Default font entries (overridden by flavors) -->
+    <string name="font_system">System Default</string>
+    <string-array name="font_entries">
+        <item>System Default</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>system</item>
+    </string-array>
+
+    <!-- Key labels -->
+    <string name="key_space">Space</string>
+    <string name="key_done">↵</string>
+    <string name="key_shift">⇧</string>
+    <string name="key_backspace">⌫</string>
+    <string name="key_return">↵</string>
+
+    <!-- Accessibility -->
+    <string name="announce_keyboard_shown">Keyboard shown</string>
+    <string name="announce_keyboard_hidden">Keyboard hidden</string>
+    <string name="announce_shift_on">Shift mode on</string>
+    <string name="announce_shift_off">Shift mode off</string>
+</resources>

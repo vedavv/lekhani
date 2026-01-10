@@ -1,0 +1,124 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Load local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+}
+
+android {
+    namespace 'in.dharmaposhanam.lekhani'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(localProperties['RELEASE_STORE_FILE'] ?: '../release-keystore.jks')
+            storePassword localProperties['RELEASE_STORE_PASSWORD'] ?: ''
+            keyAlias localProperties['RELEASE_KEY_ALIAS'] ?: ''
+            keyPassword localProperties['RELEASE_KEY_PASSWORD'] ?: ''
+        }
+    }
+
+    flavorDimensions "language"
+
+    productFlavors {
+        sanskrit {
+            dimension "language"
+            applicationId "in.dharmaposhanam.lekhani.sanskrit"
+            resValue "string", "app_name", "Lekhani Sanskrit"
+            resValue "string", "language_name", "Sanskrit"
+            resValue "string", "language_native", "संस्कृतम्"
+            resValue "string", "language_code", "sa"
+            resValue "string", "keyboard_label", "संस्कृत"
+            buildConfigField "String", "SCRIPT_TYPE", "\"DEVANAGARI\""
+        }
+        hindi {
+            dimension "language"
+            applicationId "in.dharmaposhanam.lekhani.hindi"
+            resValue "string", "app_name", "Lekhani Hindi"
+            resValue "string", "language_name", "Hindi"
+            resValue "string", "language_native", "हिन्दी"
+            resValue "string", "language_code", "hi"
+            resValue "string", "keyboard_label", "हिन्दी"
+            buildConfigField "String", "SCRIPT_TYPE", "\"DEVANAGARI\""
+        }
+        telugu {
+            dimension "language"
+            applicationId "in.dharmaposhanam.lekhani.telugu"
+            resValue "string", "app_name", "Lekhani Telugu"
+            resValue "string", "language_name", "Telugu"
+            resValue "string", "language_native", "తెలుగు"
+            resValue "string", "language_code", "te"
+            resValue "string", "keyboard_label", "తెలుగు"
+            buildConfigField "String", "SCRIPT_TYPE", "\"TELUGU\""
+        }
+        kannada {
+            dimension "language"
+            applicationId "in.dharmaposhanam.lekhani.kannada"
+            resValue "string", "app_name", "Lekhani Kannada"
+            resValue "string", "language_name", "Kannada"
+            resValue "string", "language_native", "ಕನ್ನಡ"
+            resValue "string", "language_code", "kn"
+            resValue "string", "keyboard_label", "ಕನ್ನಡ"
+            buildConfigField "String", "SCRIPT_TYPE", "\"KANNADA\""
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

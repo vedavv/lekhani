@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keyboard dimensions -->
+    <dimen name="keyboard_padding_horizontal">8dp</dimen>
+    <dimen name="keyboard_padding_top">12dp</dimen>
+    <dimen name="keyboard_padding_bottom">16dp</dimen>
+
+    <!-- Key dimensions -->
+    <dimen name="key_height">48dp</dimen>
+    <dimen name="key_height_landscape">40dp</dimen>
+    <dimen name="key_gap">3dp</dimen>
+    <dimen name="key_corner_radius">5dp</dimen>
+
+    <!-- Key text -->
+    <dimen name="key_text_size">20sp</dimen>
+    <dimen name="key_text_size_small">16sp</dimen>
+    <dimen name="key_text_size_label">14sp</dimen>
+
+    <!-- Popup dimensions -->
+    <dimen name="popup_padding_horizontal">12dp</dimen>
+    <dimen name="popup_padding_vertical">12dp</dimen>
+    <dimen name="popup_item_padding_horizontal">20dp</dimen>
+    <dimen name="popup_item_padding_vertical">16dp</dimen>
+    <dimen name="popup_item_min_width">64dp</dimen>
+    <dimen name="popup_item_min_height">64dp</dimen>
+    <dimen name="popup_corner_radius">10dp</dimen>
+    <dimen name="popup_elevation">12dp</dimen>
+    <dimen name="popup_text_size">24sp</dimen>
+</resources>

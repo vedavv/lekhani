@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subtype_label">Kannada (ಕನ್ನಡ)</string>
+    <string name="key_space">ಸ್ಪೇಸ್</string>
+
+    <!-- Font options for Kannada -->
+    <string-array name="font_entries">
+        <item>Nandana</item>
+        <item>Anek Kannada</item>
+        <item>System Default</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>nandana</item>
+        <item>anek_kannada</item>
+        <item>system</item>
+    </string-array>
+</resources>

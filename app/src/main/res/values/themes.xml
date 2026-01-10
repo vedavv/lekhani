@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Lekhani" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/keyboard_background</item>
+    </style>
+
+    <style name="KeyboardKey">
+        <item name="android:background">@drawable/key_background</item>
+        <item name="android:textColor">@color/key_text</item>
+        <item name="android:textSize">@dimen/key_text_size</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">@dimen/key_height</item>
+    </style>
+
+    <style name="KeyboardKey.Special">
+        <item name="android:background">@drawable/key_special_background</item>
+    </style>
+
+    <style name="KeyboardKey.Done">
+        <item name="android:background">@drawable/key_done_background</item>
+        <item name="android:textColor">@color/key_done_text</item>
+        <item name="android:textSize">@dimen/key_text_size_small</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="PopupItem">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:textColor">@color/popup_text</item>
+        <item name="android:textSize">@dimen/popup_text_size</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minWidth">@dimen/popup_item_min_width</item>
+        <item name="android:minHeight">@dimen/popup_item_min_height</item>
+        <item name="android:paddingStart">@dimen/popup_item_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/popup_item_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/popup_item_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/popup_item_padding_vertical</item>
+    </style>
+</resources>

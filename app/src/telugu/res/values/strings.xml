@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subtype_label">Telugu (తెలుగు)</string>
+    <string name="key_space">స్పేస్</string>
+
+    <!-- Font options for Telugu -->
+    <string-array name="font_entries">
+        <item>Chathura</item>
+        <item>Mandali</item>
+        <item>System Default</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>chathura</item>
+        <item>mandali</item>
+        <item>system</item>
+    </string-array>
+</resources>
