@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keyboard colors matching iOS style -->
+    <color name="keyboard_background">#D1D3D9</color>
+    <color name="key_background">#FFFFFF</color>
+    <color name="key_background_pressed">#C8C8CA</color>
+    <color name="key_text">#000000</color>
+    <color name="key_text_secondary">#5C5C5E</color>
+
+    <!-- Special keys -->
+    <color name="key_special_background">#ADB4BE</color>
+    <color name="key_special_pressed">#8E959F</color>
+    <color name="key_done_background">#007AFF</color>
+    <color name="key_done_pressed">#0056B3</color>
+    <color name="key_done_text">#FFFFFF</color>
+
+    <!-- Shift active state -->
+    <color name="shift_active_border">#007AFF</color>
+
+    <!-- Popup colors -->
+    <color name="popup_background">#FFFFFF</color>
+    <color name="popup_text">#000000</color>
+    <color name="popup_border">#B0B0B0</color>
+    <color name="popup_highlight">#E0E0E0</color>
+</resources>
