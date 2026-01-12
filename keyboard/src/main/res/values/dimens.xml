@@ -17,13 +17,13 @@
     <dimen name="key_text_size_label">14sp</dimen>
 
     <!-- Popup dimensions -->
-    <dimen name="popup_padding_horizontal">12dp</dimen>
-    <dimen name="popup_padding_vertical">12dp</dimen>
-    <dimen name="popup_item_padding_horizontal">20dp</dimen>
-    <dimen name="popup_item_padding_vertical">16dp</dimen>
-    <dimen name="popup_item_min_width">64dp</dimen>
-    <dimen name="popup_item_min_height">64dp</dimen>
+    <dimen name="popup_padding_horizontal">8dp</dimen>
+    <dimen name="popup_padding_vertical">8dp</dimen>
+    <dimen name="popup_item_padding_horizontal">12dp</dimen>
+    <dimen name="popup_item_padding_vertical">10dp</dimen>
+    <dimen name="popup_item_min_width">48dp</dimen>
+    <dimen name="popup_item_min_height">48dp</dimen>
     <dimen name="popup_corner_radius">10dp</dimen>
     <dimen name="popup_elevation">12dp</dimen>
-    <dimen name="popup_text_size">24sp</dimen>
+    <dimen name="popup_text_size">20sp</dimen>
 </resources>

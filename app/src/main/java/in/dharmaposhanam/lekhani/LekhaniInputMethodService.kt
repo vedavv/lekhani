@@ -131,6 +131,24 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
         handleCharacterInput(key)
     }
 
+    override fun onCursorMove(direction: Int) {
+        val ic = currentInputConnection ?: return
+
+        // Get current cursor position info
+        val extracted = ic.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0)
+        if (extracted != null) {
+            val currentPos = extracted.selectionStart
+            val newPos = currentPos + direction
+
+            // Ensure we stay within bounds
+            if (newPos >= 0 && newPos <= extracted.text.length) {
+                ic.setSelection(newPos, newPos)
+                // Light haptic feedback for cursor movement
+                performLightHapticFeedback()
+            }
+        }
+    }
+
     private fun handleCharacterInput(text: String) {
         val ic = currentInputConnection ?: return
         ic.commitText(text, 1)
@@ -194,6 +212,19 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
             } else {
                 @Suppress("DEPRECATION")
                 vib.vibrate(10)
+            }
+        }
+    }
+
+    private fun performLightHapticFeedback() {
+        if (!vibrateOnKeypress) return
+
+        vibrator?.let { vib ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vib.vibrate(VibrationEffect.createOneShot(5, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vib.vibrate(5)
             }
         }
     }

@@ -73,6 +73,11 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         orientation = VERTICAL
         setBackgroundColor(ContextCompat.getColor(context, R.color.keyboard_background))
 
+        // Prevent keyboard from stealing focus from TextInput
+        isFocusable = false
+        isFocusableInTouchMode = false
+        descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+
         // Load dimensions
         val res = context.resources
         keyGap = res.getDimensionPixelSize(R.dimen.key_gap)
@@ -529,9 +534,10 @@ class LekhaniKeyboardView @JvmOverloads constructor(
 
     private fun createPopupItem(key: String): TextView {
         return TextView(context).apply {
-            text = key
+            // Use display text for combining marks (need base vowel to render)
+            text = CombiningMarks.getDisplayText(key) ?: key
             customFont?.let { typeface = it }
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.popup_text_size))
             setTextColor(ContextCompat.getColor(context, R.color.popup_text))
             gravity = Gravity.CENTER
 

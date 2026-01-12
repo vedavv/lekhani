@@ -9,6 +9,120 @@ package `in`.dharmaposhanam.lekhani.keyboard
  */
 
 /**
+ * Vedic Svara Marks - Standard Unicode and VijayaDV PUA variants
+ *
+ * VijayaDV font uses Private Use Area (PUA) characters for svara marks
+ * which render better than standard Unicode in that font.
+ */
+object SvaraMarks {
+    // Standard Unicode Vedic tone marks (default)
+    const val SVARITA_UNICODE = '\u0951'        // ॑ DEVANAGARI STRESS SIGN UDATTA (svarita)
+    const val ANUDATTA_UNICODE = '\u0952'       // ॒ DEVANAGARI STRESS SIGN ANUDATTA
+    const val DEERGHA_SVARITA_UNICODE = '\u1CDA' // ᳚ VEDIC TONE DOUBLE SVARITA
+
+    // VijayaDV Private Use Area characters
+    const val SVARITA_PUA = '\uE302'        // स्वरित
+    const val ANUDATTA_PUA = '\uE301'       // अनुदात्त
+    const val DEERGHA_SVARITA_PUA = '\uE303' // दीर्घ स्वरित
+
+    // Current active characters (default to Unicode)
+    var SVARITA = SVARITA_UNICODE
+        private set
+    var ANUDATTA = ANUDATTA_UNICODE
+        private set
+    var DEERGHA_SVARITA = DEERGHA_SVARITA_UNICODE
+        private set
+
+    // Track current mode
+    var usePua = false
+        private set
+
+    /**
+     * Switch between PUA and Unicode characters for svara marks.
+     * Call this before building keyboard to use PUA characters.
+     * @param usePua If true, use VijayaDV PUA characters; if false, use standard Unicode
+     */
+    fun usePuaCharacters(usePua: Boolean) {
+        this.usePua = usePua
+        if (usePua) {
+            SVARITA = SVARITA_PUA
+            ANUDATTA = ANUDATTA_PUA
+            DEERGHA_SVARITA = DEERGHA_SVARITA_PUA
+        } else {
+            SVARITA = SVARITA_UNICODE
+            ANUDATTA = ANUDATTA_UNICODE
+            DEERGHA_SVARITA = DEERGHA_SVARITA_UNICODE
+        }
+    }
+
+    /**
+     * Check if a character is a svara mark (either Unicode or PUA)
+     */
+    fun isSvaraMark(char: Char): Boolean {
+        return char == SVARITA_UNICODE || char == ANUDATTA_UNICODE ||
+               char == DEERGHA_SVARITA_UNICODE ||
+               char == SVARITA_PUA || char == ANUDATTA_PUA ||
+               char == DEERGHA_SVARITA_PUA
+    }
+
+    /**
+     * Get display text showing base vowel with svara mark
+     */
+    fun getDisplayText(char: Char): String? {
+        return when (char) {
+            SVARITA, SVARITA_UNICODE, SVARITA_PUA -> "अ$SVARITA"
+            ANUDATTA, ANUDATTA_UNICODE, ANUDATTA_PUA -> "अ$ANUDATTA"
+            DEERGHA_SVARITA, DEERGHA_SVARITA_UNICODE, DEERGHA_SVARITA_PUA -> "अ$DEERGHA_SVARITA"
+            else -> null
+        }
+    }
+}
+
+/**
+ * Helper for displaying combining Devanagari diacritics with a base character.
+ * Combining marks render as dotted circles when displayed alone.
+ */
+object CombiningMarks {
+    // Devanagari combining marks that need a base character for display
+    private val combiningRanges = listOf(
+        '\u0901'..'\u0903',  // Chandrabindu, Anusvara, Visarga
+        '\u093A'..'\u093C',  // Nukta and friends
+        '\u093E'..'\u094F',  // Dependent vowel signs (matras)
+        '\u0951'..'\u0957',  // Vedic tone marks
+        '\u0962'..'\u0963',  // Vowel signs for vocalic L
+        '\u1CDA'..'\u1CDA',  // Vedic double svarita
+    )
+
+    // PUA characters also need base
+    private val puaMarks = setOf(
+        '\uE301', '\uE302', '\uE303'  // Lekhani PUA svara marks
+    )
+
+    /**
+     * Check if a character is a combining mark that needs a base for display
+     */
+    fun isCombiningMark(char: Char): Boolean {
+        if (puaMarks.contains(char)) return true
+        return combiningRanges.any { char in it }
+    }
+
+    /**
+     * Get display text for a combining mark (adds base vowel अ)
+     */
+    fun getDisplayText(text: String): String? {
+        if (text.length != 1) return null
+        val char = text[0]
+        // For svara marks, use SvaraMarks which respects PUA mode
+        SvaraMarks.getDisplayText(char)?.let { return it }
+        // For other combining marks, add base vowel
+        if (isCombiningMark(char)) {
+            return "अ$char"
+        }
+        return null
+    }
+}
+
+/**
  * Long-press popup mappings for alternate characters
  * Based on iOS Devanagari keyboard behavior
  */
@@ -64,9 +178,9 @@ object PopupMappings {
         "ङ" to listOf("न"),
         "म" to listOf("ं", "ँ"),
 
-        // Anusvara and Chandrabindu (with Vedic svara marks)
-        "ं" to listOf("ँ", "ः", "॑", "॒"),
-        "ँ" to listOf("ं", "ः", "॑", "॒"),
+        // Anusvara and Chandrabindu (svara marks added dynamically)
+        "ं" to listOf("ँ", "ः"),
+        "ँ" to listOf("ं", "ः"),
 
         // Conjuncts on shift page
         "क्ष" to listOf("क", "ष"),
@@ -100,12 +214,31 @@ object PopupMappings {
         "स" to listOf("श", "ष"),
         "ह" to listOf("ः"),
 
-        // Vedic svara marks
-        "॑" to listOf("॒", "᳚"),
-        "॒" to listOf("॑", "᳚")
+        // Vedic svara marks - alternates added dynamically based on PUA mode
+        "॑" to listOf("॒"),
+        "॒" to listOf("॑")
     )
 
-    fun getAlternates(key: String): List<String>? = baseMappings[key]
+    // Keys that should have svara marks added dynamically
+    private val svaraKeys = setOf("ं", "ँ")
+
+    /**
+     * Get alternate characters for a key.
+     * Dynamically adds svara marks to anusvara/chandrabindu based on current SvaraMarks mode.
+     */
+    fun getAlternates(key: String): List<String>? {
+        val base = baseMappings[key] ?: return null
+        // Add svara marks to anusvara/chandrabindu keys
+        return if (key in svaraKeys) {
+            base + listOf(
+                "${SvaraMarks.SVARITA}",
+                "${SvaraMarks.ANUDATTA}",
+                "${SvaraMarks.DEERGHA_SVARITA}"
+            )
+        } else {
+            base
+        }
+    }
 
     fun hasAlternates(key: String): Boolean = baseMappings.containsKey(key)
 }
@@ -172,5 +305,21 @@ object KeyboardLayouts {
 
     fun isSpecialKey(key: String): Boolean {
         return SpecialKey.entries.any { it.display == key }
+    }
+
+    /**
+     * Check if a key is a svara mark
+     */
+    fun isSvaraKey(key: String): Boolean {
+        if (key.length != 1) return false
+        return SvaraMarks.isSvaraMark(key[0])
+    }
+
+    /**
+     * Get display text for a svara key (shows base vowel + mark)
+     */
+    fun getSvaraDisplayText(key: String): String? {
+        if (key.length != 1) return null
+        return SvaraMarks.getDisplayText(key[0])
     }
 }

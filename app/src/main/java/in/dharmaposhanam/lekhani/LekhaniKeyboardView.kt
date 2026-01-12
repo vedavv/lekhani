@@ -35,6 +35,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         fun onKeyPressed(key: String)
         fun onKeyLongPressed(key: String)
         fun onPopupKeySelected(key: String)
+        fun onCursorMove(direction: Int) // -1 for left, 1 for right
     }
 
     private var listener: KeyboardActionListener? = null
@@ -61,6 +62,12 @@ class LekhaniKeyboardView @JvmOverloads constructor(
 
     // Track if we need to rebuild after attachment
     private var needsRebuildOnAttach = false
+
+    // Spacebar swipe tracking for cursor movement
+    private var spacebarSwipeStartX = 0f
+    private var spacebarSwipeLastX = 0f
+    private var spacebarSwiping = false
+    private val swipeThreshold = 25f // pixels to move cursor by 1 position
 
     init {
         orientation = VERTICAL
@@ -275,6 +282,13 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                     selectedPopupIndex = -1
                     longPressConsumed = false
 
+                    // Initialize spacebar swipe tracking
+                    if (key == SpecialKey.SPACE.display) {
+                        spacebarSwipeStartX = event.x
+                        spacebarSwipeLastX = event.x
+                        spacebarSwiping = false
+                    }
+
                     // Check if this key has alternates for long press popup
                     if (PopupMappings.hasAlternates(key)) {
                         longPressRunnable = Runnable {
@@ -287,8 +301,11 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                     // Spacebar long press - show keyboard picker (no popup)
                     else if (key == SpecialKey.SPACE.display) {
                         longPressRunnable = Runnable {
-                            longPressConsumed = true
-                            listener?.onKeyLongPressed(key)
+                            // Only trigger long press if not swiping
+                            if (!spacebarSwiping) {
+                                longPressConsumed = true
+                                listener?.onKeyLongPressed(key)
+                            }
                         }
                         handler.postDelayed(longPressRunnable!!, longPressDelay)
                     }
@@ -308,10 +325,13 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                             listener?.onPopupKeySelected(selectedKey)
                         }
                         dismissPopup()
-                    } else if (!longPressConsumed) {
-                        // Only fire key press if long press wasn't consumed
+                    } else if (!longPressConsumed && !spacebarSwiping) {
+                        // Only fire key press if long press wasn't consumed and not swiping
                         listener?.onKeyPressed(key)
                     }
+
+                    // Reset spacebar swipe state
+                    spacebarSwiping = false
                     longPressConsumed = false
                     true
                 }
@@ -319,12 +339,33 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                     view.isPressed = false
                     longPressRunnable?.let { handler.removeCallbacks(it) }
                     longPressRunnable = null
+                    spacebarSwiping = false
                     dismissPopup()
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    // Handle spacebar swipe for cursor movement
+                    if (key == SpecialKey.SPACE.display) {
+                        val deltaX = event.x - spacebarSwipeLastX
+                        val totalDelta = event.x - spacebarSwipeStartX
+
+                        // Detect if we're swiping (moved more than a small threshold)
+                        if (kotlin.math.abs(totalDelta) > swipeThreshold / 2) {
+                            spacebarSwiping = true
+                            // Cancel long press when swiping starts
+                            longPressRunnable?.let { handler.removeCallbacks(it) }
+                            longPressRunnable = null
+                        }
+
+                        // Move cursor when threshold is crossed
+                        if (kotlin.math.abs(deltaX) >= swipeThreshold) {
+                            val direction = if (deltaX > 0) 1 else -1
+                            listener?.onCursorMove(direction)
+                            spacebarSwipeLastX = event.x
+                        }
+                    }
                     // If popup is showing, track finger position to highlight items
-                    if (popupWindow?.isShowing == true && popupLayout != null) {
+                    else if (popupWindow?.isShowing == true && popupLayout != null) {
                         updatePopupSelection(view, event.rawX, event.rawY)
                     } else {
                         // Check if moved outside key bounds (cancel long press)
