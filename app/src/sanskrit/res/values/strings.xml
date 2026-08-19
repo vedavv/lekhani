@@ -2,4 +2,18 @@
 <resources>
     <string name="subtype_label">Sanskrit (संस्कृतम्)</string>
     <string name="key_space">स्पेस</string>
+
+    <!-- Font options for Sanskrit.
+         Tiro Devanagari Sanskrit covers U+0951/0952/1CDA; VijayaDV covers the
+         PUA svara marks instead. Asset file names must match these values. -->
+    <string-array name="font_entries">
+        <item>Tiro Devanagari Sanskrit</item>
+        <item>VijayaDV</item>
+        <item>System Default</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>tiro_devanagari_sanskrit</item>
+        <item>vijayadv</item>
+        <item>system</item>
+    </string-array>
 </resources>

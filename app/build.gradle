@@ -44,6 +44,8 @@ android {
             resValue "string", "language_code", "sa"
             resValue "string", "keyboard_label", "संस्कृत"
             buildConfigField "String", "SCRIPT_TYPE", "\"DEVANAGARI\""
+            // Vedic svara encoding + bundled Vedic fonts ship with Sanskrit only
+            buildConfigField "boolean", "SUPPORTS_VEDIC_SVARA", "true"
         }
         hindi {
             dimension "language"
@@ -54,6 +56,7 @@ android {
             resValue "string", "language_code", "hi"
             resValue "string", "keyboard_label", "हिन्दी"
             buildConfigField "String", "SCRIPT_TYPE", "\"DEVANAGARI\""
+            buildConfigField "boolean", "SUPPORTS_VEDIC_SVARA", "false"
         }
         telugu {
             dimension "language"
@@ -64,6 +67,7 @@ android {
             resValue "string", "language_code", "te"
             resValue "string", "keyboard_label", "తెలుగు"
             buildConfigField "String", "SCRIPT_TYPE", "\"TELUGU\""
+            buildConfigField "boolean", "SUPPORTS_VEDIC_SVARA", "false"
         }
         kannada {
             dimension "language"
@@ -74,6 +78,7 @@ android {
             resValue "string", "language_code", "kn"
             resValue "string", "keyboard_label", "ಕನ್ನಡ"
             buildConfigField "String", "SCRIPT_TYPE", "\"KANNADA\""
+            buildConfigField "boolean", "SUPPORTS_VEDIC_SVARA", "false"
         }
     }
 

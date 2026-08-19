@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Fonts staged for export live in cache/fonts -->
+    <cache-path name="fonts" path="fonts/" />
+</paths>
