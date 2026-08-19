@@ -64,9 +64,9 @@ object PopupMappings {
         "ङ" to listOf("न"),
         "म" to listOf("ं", "ँ"),
 
-        // Anusvara and Chandrabindu (with Vedic svara marks)
-        "ं" to listOf("ँ", "ः", "॑", "॒"),
-        "ँ" to listOf("ं", "ः", "॑", "॒"),
+        // Anusvara and Chandrabindu (Vedic svara marks appended dynamically)
+        "ं" to listOf("ँ", "ः"),
+        "ँ" to listOf("ं", "ः"),
 
         // Conjuncts on shift page
         "क्ष" to listOf("क", "ष"),
@@ -100,12 +100,34 @@ object PopupMappings {
         "स" to listOf("श", "ष"),
         "ह" to listOf("ः"),
 
-        // Vedic svara marks
-        "॑" to listOf("॒", "᳚"),
-        "॒" to listOf("॑", "᳚")
+        // Vedic svara marks (alternates generated from the active encoding)
+        "॑" to emptyList(),
+        "॒" to emptyList(),
+        "᳚" to emptyList(),
+        "\uE302" to emptyList(),
+        "\uE301" to emptyList(),
+        "\uE303" to emptyList()
     )
 
-    fun getAlternates(key: String): List<String>? = baseMappings[key]
+    /** Keys that get the svara marks appended in whichever encoding is active. */
+    private val svaraHostKeys = setOf("ं", "ँ")
+
+    /**
+     * Alternates for a key.
+     *
+     * Anusvara/chandrabindu gain the three svara marks, and a svara key offers
+     * the other two, both in the currently selected [SvaraEncoding] - so the
+     * popup always commits the same encoding the user chose.
+     */
+    fun getAlternates(key: String): List<String>? {
+        val base = baseMappings[key] ?: return null
+        val marks = SvaraMarks.marks()
+        return when {
+            key in svaraHostKeys -> base + marks
+            KeyboardLayouts.isSvaraKey(key) -> marks.filter { it != key }
+            else -> base
+        }
+    }
 
     fun hasAlternates(key: String): Boolean = baseMappings.containsKey(key)
 }
@@ -127,7 +149,7 @@ object KeyboardLayouts {
         // Special + consonants row 3
         listOf(SpecialKey.SHIFT.display, "ँ", "ं", "म", "न", "व", "ल", "स", "य", SpecialKey.BACKSPACE.display),
         // Bottom row
-        listOf(SpecialKey.SPACE.display, SpecialKey.RETURN.display)
+        listOf(SpecialKey.SETTINGS.display, SpecialKey.SPACE.display, SpecialKey.RETURN.display)
     )
 
     // Shift page rows
@@ -141,7 +163,7 @@ object KeyboardLayouts {
         // Special consonants and conjuncts
         listOf(SpecialKey.SHIFT.display, "ष", "ऋ", "ण", "ळ", "श्र", "ज्ञ", "क्ष", "श", SpecialKey.BACKSPACE.display),
         // Bottom row
-        listOf(SpecialKey.SPACE.display, SpecialKey.RETURN.display)
+        listOf(SpecialKey.SETTINGS.display, SpecialKey.SPACE.display, SpecialKey.RETURN.display)
     )
 
     /**
@@ -173,4 +195,12 @@ object KeyboardLayouts {
     fun isSpecialKey(key: String): Boolean {
         return SpecialKey.entries.any { it.display == key }
     }
+
+    /** True if the key is a Vedic svara mark in either encoding. */
+    fun isSvaraKey(key: String): Boolean =
+        key.length == 1 && SvaraMarks.isSvaraMark(key[0])
+
+    /** Svara keys render as a dotted circle alone, so show them on a base vowel. */
+    fun getSvaraDisplayText(key: String): String? =
+        if (key.length == 1) SvaraMarks.getDisplayText(key[0]) else null
 }

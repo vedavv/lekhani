@@ -47,6 +47,32 @@
         <item>system</item>
     </string-array>
 
+    <!-- Vedic svara encoding -->
+    <string name="key_settings_description">Keyboard settings</string>
+    <string name="svara_encoding_title">Vedic svara encoding</string>
+    <string name="svara_encoding_unicode">Unicode</string>
+    <string name="svara_encoding_unicode_detail">U+0951 / U+0952 / U+1CDA \u2014 portable</string>
+    <string name="svara_encoding_vijayadv">VijayaDV</string>
+    <string name="svara_encoding_vijayadv_detail">Private Use Area \u2014 needs VijayaDV font</string>
+    <string name="svara_encoding_applied">Svara encoding: %1$s</string>
+    <string name="pref_svara_encoding_title">Svara encoding</string>
+    <string name="pref_svara_encoding_summary">Character set used for Vedic tone marks</string>
+    <string name="pref_category_vedic">Vedic</string>
+    <string name="more_settings">More settings\u2026</string>
+    <string name="download_vijayadv_font">Download VijayaDV font</string>
+    <string name="download_vijayadv_font_summary">Save the font so PUA-encoded text renders in other apps</string>
+    <string name="font_saved_to_downloads">VijayaDV.ttf saved to Downloads</string>
+    <string name="font_export_failed">Could not export font: %1$s</string>
+
+    <string-array name="svara_encoding_entries">
+        <item>Unicode</item>
+        <item>VijayaDV (PUA)</item>
+    </string-array>
+    <string-array name="svara_encoding_values">
+        <item>unicode</item>
+        <item>vijayadv</item>
+    </string-array>
+
     <!-- Key labels -->
     <string name="key_space">Space</string>
     <string name="key_done">↵</string>

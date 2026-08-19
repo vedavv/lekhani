@@ -36,6 +36,9 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         fun onKeyLongPressed(key: String)
         fun onPopupKeySelected(key: String)
         fun onCursorMove(direction: Int) // -1 for left, 1 for right
+        fun onSvaraEncodingChanged(encoding: SvaraEncoding)
+        fun onOpenFullSettings()
+        fun onDownloadVijayaDvFont()
     }
 
     private var listener: KeyboardActionListener? = null
@@ -49,6 +52,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
     private val handler = Handler(Looper.getMainLooper())
     private var longPressRunnable: Runnable? = null
     private var longPressConsumed = false
+    private var settingsPanel: SvaraSettingsPanel? = null
 
     // Dimensions
     private val keyGap: Int
@@ -163,7 +167,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
             }
 
             keys.forEachIndexed { keyIndex, key ->
-                val keyView = createKeyView(key, rowIndex, keys.size, keyHeight)
+                val keyView = createKeyView(key, rowIndex, keys, keyHeight)
                 addView(keyView)
 
                 if (keyIndex < keys.size - 1) {
@@ -176,10 +180,10 @@ class LekhaniKeyboardView @JvmOverloads constructor(
     private fun createKeyView(
         key: String,
         rowIndex: Int,
-        rowLength: Int,
+        rowKeys: List<String>,
         keyHeight: Int
     ): View {
-        val keyWidth = calculateKeyWidth(key, rowIndex, rowLength)
+        val keyWidth = calculateKeyWidth(key, rowIndex, rowKeys)
 
         return TextView(context).apply {
             // Set text
@@ -208,16 +212,29 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         }
     }
 
-    private fun calculateKeyWidth(key: String, rowIndex: Int, rowLength: Int): Int {
+    private fun calculateKeyWidth(key: String, rowIndex: Int, rowKeys: List<String>): Int {
+        val rowLength = rowKeys.size
         val screenWidth = getEffectiveWidth()
         val effectiveAvailable = screenWidth - 2 * horizontalPadding - (rowLength - 1) * keyGap
 
-        // Bottom row - space bar and return
+        // Settings gear sits beside the spacebar and takes a narrow fixed share
+        if (key == SpecialKey.SETTINGS.display) {
+            return (effectiveAvailable * SETTINGS_KEY_FRACTION).toInt()
+        }
+
+        // Bottom row - space bar and return. The spacebar yields room to the
+        // gear only on layouts that actually place one.
         if (key == SpecialKey.SPACE.display) {
-            return (effectiveAvailable * 0.6).toInt()
+            val hasSettings = rowKeys.contains(SpecialKey.SETTINGS.display)
+            val fraction = if (hasSettings) {
+                SPACE_KEY_FRACTION - SETTINGS_KEY_FRACTION
+            } else {
+                SPACE_KEY_FRACTION
+            }
+            return (effectiveAvailable * fraction).toInt()
         }
         if (key == SpecialKey.RETURN.display) {
-            return (effectiveAvailable * 0.35).toInt()
+            return (effectiveAvailable * RETURN_KEY_FRACTION).toInt()
         }
 
         // Backspace key slightly wider
@@ -233,6 +250,12 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         if (key == SpecialKey.RETURN.display) {
             return context.getString(R.string.key_done)
         }
+
+        // Svara marks render as a dotted circle on their own, so show them
+        // applied to a base vowel. Deliberately limited to svara marks: other
+        // combining marks (matras) are shared with the Hindi, Telugu and
+        // Kannada layouts and keep their existing appearance.
+        svaraDisplayText(key)?.let { return it }
 
         return key
     }
@@ -260,6 +283,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                 else R.drawable.key_special_background
             }
             SpecialKey.RETURN.display -> R.drawable.key_done_background
+            SpecialKey.SETTINGS.display -> R.drawable.key_special_background
             else -> R.drawable.key_background
         }
     }
@@ -270,6 +294,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
             SpecialKey.SHIFT.display -> "Shift"
             SpecialKey.SPACE.display -> "Space"
             SpecialKey.RETURN.display -> "Done"
+            SpecialKey.SETTINGS.display -> context.getString(R.string.key_settings_description)
             else -> key
         }
     }
@@ -328,6 +353,11 @@ class LekhaniKeyboardView @JvmOverloads constructor(
                     } else if (!longPressConsumed && !spacebarSwiping) {
                         // Only fire key press if long press wasn't consumed and not swiping
                         listener?.onKeyPressed(key)
+
+                        // The gear opens the quick-settings panel over the keyboard
+                        if (key == SpecialKey.SETTINGS.display) {
+                            showSettingsPanel(view)
+                        }
                     }
 
                     // Reset spacebar swipe state
@@ -482,7 +512,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
 
     private fun createPopupItem(key: String): TextView {
         return TextView(context).apply {
-            text = key
+            text = svaraDisplayText(key) ?: key
             customFont?.let { typeface = it }
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
             setTextColor(ContextCompat.getColor(context, R.color.popup_text))
@@ -520,6 +550,7 @@ class LekhaniKeyboardView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         dismissPopup()
+        dismissSettingsPanel()
         longPressRunnable?.let { handler.removeCallbacks(it) }
     }
 
@@ -527,5 +558,43 @@ class LekhaniKeyboardView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         // Rebuild keyboard when size changes (rotation, etc.)
         currentPage?.let { rebuildKeyboard(it) }
+    }
+
+    /** Base vowel plus mark for a svara key, or null for anything else. */
+    private fun svaraDisplayText(key: String): String? =
+        if (key.length == 1) SvaraMarks.getDisplayText(key[0]) else null
+
+    private fun showSettingsPanel(anchor: View) {
+        dismissPopup()
+
+        val panel = settingsPanel ?: SvaraSettingsPanel(
+            context,
+            object : SvaraSettingsPanel.Callbacks {
+                override fun onEncodingSelected(encoding: SvaraEncoding) {
+                    listener?.onSvaraEncodingChanged(encoding)
+                }
+
+                override fun onDownloadVijayaDvFont() {
+                    listener?.onDownloadVijayaDvFont()
+                }
+
+                override fun onOpenFullSettings() {
+                    listener?.onOpenFullSettings()
+                }
+            }
+        ).also { settingsPanel = it }
+
+        panel.show(anchor, SvaraMarks.encoding)
+    }
+
+    private fun dismissSettingsPanel() {
+        settingsPanel?.dismiss()
+    }
+
+    companion object {
+        // Bottom-row key widths, as fractions of the row's available width
+        private const val SETTINGS_KEY_FRACTION = 0.12
+        private const val SPACE_KEY_FRACTION = 0.6
+        private const val RETURN_KEY_FRACTION = 0.35
     }
 }

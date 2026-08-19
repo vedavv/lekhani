@@ -1,6 +1,7 @@
 package `in`.dharmaposhanam.lekhani
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.inputmethodservice.InputMethodService
 import android.media.AudioManager
@@ -12,6 +13,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.preference.PreferenceManager
 import java.text.BreakIterator
 
@@ -50,25 +52,37 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
     }
 
     private fun loadCustomFont() {
-        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
-        val fontPref = prefs.getString("pref_font", null)
-
-        customFont = when (fontPref) {
-            "system", null -> null
-            else -> {
-                try {
-                    Typeface.createFromAsset(assets, "fonts/$fontPref.ttf")
-                } catch (e: Exception) {
-                    // Fall back to system font if loading fails
-                    null
-                }
-            }
-        }
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        customFont = FontLoader.load(this, prefs.getString(PREF_FONT, null))
     }
 
     private fun loadPreferences() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         vibrateOnKeypress = prefs.getBoolean("pref_vibrate", true)
+        SvaraMarks.setEncoding(
+            SvaraEncoding.fromPrefValue(prefs.getString(PREF_SVARA_ENCODING, null))
+        )
+    }
+
+    /**
+     * Persist an encoding choice and move the display font with it.
+     *
+     * The two are coupled because neither font can draw the other's marks:
+     * VijayaDV has no glyph at U+1CDA, and the Unicode font has nothing in the
+     * PUA. Leaving them independent lets a user select a combination that
+     * silently renders every svara as a blank box.
+     */
+    private fun applySvaraEncoding(encoding: SvaraEncoding) {
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+            .putString(PREF_SVARA_ENCODING, encoding.prefValue)
+            .putString(PREF_FONT, encoding.fontAsset)
+            .apply()
+
+        SvaraMarks.setEncoding(encoding)
+        loadCustomFont()
+
+        keyboardView?.setCustomFont(customFont)
+        keyboardView?.setKeyboardPage(KeyboardLayouts.getPage(currentPageIndex), currentPageIndex)
     }
 
     override fun onCreateInputView(): View {
@@ -112,6 +126,7 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
             SpecialKey.SPACE.display -> handleSpace()
             SpecialKey.SHIFT.display -> handleShift()
             SpecialKey.RETURN.display -> handleReturn()
+            SpecialKey.SETTINGS.display -> Unit  // The view opens the settings panel
             else -> handleCharacterInput(key)
         }
     }
@@ -147,6 +162,35 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
                 performLightHapticFeedback()
             }
         }
+    }
+
+    override fun onSvaraEncodingChanged(encoding: SvaraEncoding) {
+        applySvaraEncoding(encoding)
+        val label = when (encoding) {
+            SvaraEncoding.UNICODE -> getString(R.string.svara_encoding_unicode)
+            SvaraEncoding.VIJAYADV -> getString(R.string.svara_encoding_vijayadv)
+        }
+        toast(getString(R.string.svara_encoding_applied, label))
+    }
+
+    override fun onOpenFullSettings() {
+        val intent = Intent(this, ImeSettingsActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+
+    override fun onDownloadVijayaDvFont() {
+        when (val result = FontExporter.exportVijayaDv(this)) {
+            is FontExporter.Result.SavedToDownloads ->
+                toast(getString(R.string.font_saved_to_downloads))
+            is FontExporter.Result.Shared -> Unit  // The chooser is its own feedback
+            is FontExporter.Result.Failed ->
+                toast(getString(R.string.font_export_failed, result.cause.message ?: ""))
+        }
+    }
+
+    private fun toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun handleCharacterInput(text: String) {
@@ -227,5 +271,10 @@ class LekhaniInputMethodService : InputMethodService(), LekhaniKeyboardView.Keyb
                 vib.vibrate(5)
             }
         }
+    }
+
+    companion object {
+        private const val PREF_FONT = "pref_font"
+        private const val PREF_SVARA_ENCODING = "pref_svara_encoding"
     }
 }

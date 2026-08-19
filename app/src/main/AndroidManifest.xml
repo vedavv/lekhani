@@ -50,6 +50,19 @@
             </intent-filter>
         </activity>
 
+        <!-- Shares exported font files on API 24-28, where MediaStore
+             Downloads is unavailable and the alternative would be
+             WRITE_EXTERNAL_STORAGE -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

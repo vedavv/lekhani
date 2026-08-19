@@ -16,5 +16,6 @@ enum class SpecialKey(val display: String) {
     SHIFT("⇧"),
     SPACE(" "),  // Will be customized per language
     RETURN("return"),
-    DONE("Done")
+    DONE("Done"),
+    SETTINGS("⚙")
 }
