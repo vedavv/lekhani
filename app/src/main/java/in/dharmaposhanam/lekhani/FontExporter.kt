@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import java.io.File
 
@@ -56,7 +57,11 @@ object FontExporter {
      * API 29+: write into MediaStore Downloads. Needs no storage permission,
      * which matters for a keyboard - an IME asking for storage access reads as
      * hostile regardless of intent.
+     *
+     * The caller guards on SDK_INT; the annotation states that contract so lint
+     * can see it across the call boundary.
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun saveToDownloads(context: Context, assetName: String) {
         val resolver = context.contentResolver
         val values = ContentValues().apply {

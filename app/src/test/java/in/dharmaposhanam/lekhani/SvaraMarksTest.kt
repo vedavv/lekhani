@@ -7,7 +7,21 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * Codepoints are written as \u escapes throughout. These characters are
+ * combining marks and Private Use Area glyphs that render as dotted circles or
+ * blanks in most editors, so the escaped form is the only readable one - and it
+ * survives copying between tools intact.
+ */
 class SvaraMarksTest {
+
+    private val svaritaUnicode = '\u0951'
+    private val anudattaUnicode = '\u0952'
+    private val deerghaSvaritaUnicode = '\u1CDA'
+    private val svaritaPua = '\uE302'
+    private val anudattaPua = '\uE301'
+    private val deerghaSvaritaPua = '\uE303'
+    private val baseVowel = '\u0905'  // अ
 
     @After
     fun resetEncoding() {
@@ -24,58 +38,71 @@ class SvaraMarksTest {
     fun `unicode encoding emits the standard codepoints`() {
         SvaraMarks.setEncoding(SvaraEncoding.UNICODE)
 
-        assertEquals('॑', SvaraMarks.svarita)
-        assertEquals('॒', SvaraMarks.anudatta)
-        assertEquals('᳚', SvaraMarks.deerghaSvarita)
+        assertEquals(0x0951, SvaraMarks.svarita.code)
+        assertEquals(0x0952, SvaraMarks.anudatta.code)
+        assertEquals(0x1CDA, SvaraMarks.deerghaSvarita.code)
     }
 
     @Test
     fun `vijayadv encoding emits the private use area codepoints`() {
         SvaraMarks.setEncoding(SvaraEncoding.VIJAYADV)
 
-        assertEquals('', SvaraMarks.svarita)
-        assertEquals('', SvaraMarks.anudatta)
-        assertEquals('', SvaraMarks.deerghaSvarita)
-    }
-
-    @Test
-    fun `deergha svarita is U+1CDA in unicode mode`() {
-        SvaraMarks.setEncoding(SvaraEncoding.UNICODE)
-
-        assertEquals(0x1CDA, SvaraMarks.deerghaSvarita.code)
+        assertEquals(0xE302, SvaraMarks.svarita.code)
+        assertEquals(0xE301, SvaraMarks.anudatta.code)
+        assertEquals(0xE303, SvaraMarks.deerghaSvarita.code)
     }
 
     @Test
     fun `marks follow the active encoding`() {
         SvaraMarks.setEncoding(SvaraEncoding.UNICODE)
-        assertEquals(listOf("॑", "॒", "᳚"), SvaraMarks.marks())
+        assertEquals(
+            listOf("$svaritaUnicode", "$anudattaUnicode", "$deerghaSvaritaUnicode"),
+            SvaraMarks.marks()
+        )
 
         SvaraMarks.setEncoding(SvaraEncoding.VIJAYADV)
-        assertEquals(listOf("", "", ""), SvaraMarks.marks())
+        assertEquals(
+            listOf("$svaritaPua", "$anudattaPua", "$deerghaSvaritaPua"),
+            SvaraMarks.marks()
+        )
     }
 
     @Test
     fun `svara marks are recognised in either encoding`() {
-        listOf('॑', '॒', '᳚', '', '', '').forEach {
-            assertTrue("expected $it to be a svara mark", SvaraMarks.isSvaraMark(it))
+        listOf(
+            svaritaUnicode, anudattaUnicode, deerghaSvaritaUnicode,
+            svaritaPua, anudattaPua, deerghaSvaritaPua
+        ).forEach {
+            assertTrue("U+%04X should be a svara mark".format(it.code), SvaraMarks.isSvaraMark(it))
         }
     }
 
     @Test
-    fun `ordinary letters are not svara marks`() {
-        listOf('अ', 'a', 'ं').forEach {
-            assertFalse("expected $it not to be a svara mark", SvaraMarks.isSvaraMark(it))
+    fun `ordinary letters and anusvara are not svara marks`() {
+        listOf(baseVowel, 'a', 'ं').forEach {
+            assertFalse("U+%04X should not be a svara mark".format(it.code), SvaraMarks.isSvaraMark(it))
         }
     }
 
     @Test
     fun `display text puts the mark on a base vowel`() {
-        assertEquals("अ॑", SvaraMarks.getDisplayText('॑'))
-        assertEquals("अ᳚", SvaraMarks.getDisplayText('᳚'))
+        assertEquals("$baseVowel$svaritaUnicode", SvaraMarks.getDisplayText(svaritaUnicode))
+        assertEquals("$baseVowel$deerghaSvaritaUnicode", SvaraMarks.getDisplayText(deerghaSvaritaUnicode))
     }
 
     @Test
-    fun `display text is null for a non-mark`() {
+    fun `PUA marks also display on a base vowel`() {
+        assertEquals("$baseVowel$deerghaSvaritaPua", SvaraMarks.getDisplayText(deerghaSvaritaPua))
+        assertEquals("$baseVowel$svaritaPua", SvaraMarks.getDisplayText(svaritaPua))
+    }
+
+    @Test
+    fun `matras are left alone so other flavors are unaffected`() {
+        // Only svara marks get a base vowel. Matras are shared with the Hindi,
+        // Telugu and Kannada layouts and must keep rendering exactly as before.
+        assertNull(SvaraMarks.getDisplayText('ा'))  // aa matra
+        assertNull(SvaraMarks.getDisplayText('ि'))  // i matra
+        assertNull(SvaraMarks.getDisplayText('क'))  // ka
         assertNull(SvaraMarks.getDisplayText('a'))
     }
 
@@ -96,19 +123,5 @@ class SvaraMarksTest {
     fun `each encoding names the font asset that can render it`() {
         assertEquals("tiro_devanagari_sanskrit", SvaraEncoding.UNICODE.fontAsset)
         assertEquals("vijayadv", SvaraEncoding.VIJAYADV.fontAsset)
-    }
-
-    @Test
-    fun `combining marks are shown on a base vowel`() {
-        assertEquals("अ॑", CombiningMarks.getDisplayText("॑"))
-        assertEquals("अा", CombiningMarks.getDisplayText("ा"))
-        assertEquals("अ", CombiningMarks.getDisplayText(""))
-    }
-
-    @Test
-    fun `base consonants are left alone`() {
-        assertNull(CombiningMarks.getDisplayText("क"))
-        assertNull(CombiningMarks.getDisplayText("अ"))
-        assertNull(CombiningMarks.getDisplayText("क्ष"))
     }
 }
